@@ -43,6 +43,10 @@ scale and genuine data quality validation are **pending**; synthetic BI5 tests
 only verify the implementation of the stated assumptions. Never treat those
 tests as independent confirmation of the archive format.
 
+Phase 1.5 adds an offline `gold-data quality-report` command and an opt-in
+local real-data ingestion test. See [Phase 1.5 evidence](phase-1-5-validation.md)
+for the current blocker and reviewed fallback sources. No data is committed.
+
 After access is available: download one completed trading hour, inspect the
 manifest, compare decoded price scale and UTC timestamps with an independent
 provider view, check both quote sides and gaps, and record actual results here.

@@ -10,6 +10,7 @@ import pandas as pd
 
 from .csv_io import load_csv, write_bundle
 from .dukascopy import download_sample
+from .quality import inspect_bundle
 from .schema import Provenance
 
 
@@ -40,6 +41,11 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument(
             "--output", type=Path, required=True, help="New directory; never overwritten"
         )
+    quality = sub.add_parser("quality-report", help="Recheck a local bundle; no network access")
+    quality.add_argument("bundle", type=Path)
+    quality.add_argument("--start", required=True, help="Expected bar-open UTC hour with offset")
+    quality.add_argument("--hours", type=int, default=1)
+    quality.add_argument("--output", required=True, type=Path, help="New JSON report file")
     return root
 
 
@@ -48,6 +54,13 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.output.exists():
             raise ValueError(f"Output already exists: {args.output}")
+        if args.command == "quality-report":
+            start = datetime.fromisoformat(args.start.replace("Z", "+00:00"))
+            result = inspect_bundle(args.bundle, start, args.hours)
+            with args.output.open("x", encoding="utf-8") as handle:
+                handle.write(json.dumps(result, indent=2, allow_nan=False) + "\n")
+            print(json.dumps(result, indent=2, allow_nan=False))
+            return 0 if result["valid"] else 1
         if args.command == "import-csv":
             provenance = Provenance(args.source, args.reference, args.data_kind, args.price_side)
             frame, digest = load_csv(args.input, provenance)

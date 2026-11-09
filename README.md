@@ -1,7 +1,7 @@
-# Gold AI Trader v1.0 — Phase 1
+# Gold AI Trader v1.0 — Phase 1.5
 
-XAUUSD M5 historical data tooling for Python 3.11+. This is a fresh implementation
-of **foundation and data pipeline only**. There is no ML model, signal service,
+XAUUSD M5 historical data tooling for Python 3.11+. Phase 1.5 continues the accepted
+Phase 1 **foundation and data pipeline only**. There is no ML model, signal service,
 backtest, MT5 execution, Telegram bot or live server. No broker credentials are
 required, and no orders can be submitted by this code.
 
@@ -121,17 +121,47 @@ quotes reject the sample. The manifest records every source URL and payload
 hash plus the requested interval. Raw compressed archives are not retained;
 hashes allow comparison with a later re-download.
 
-**Current real-data status:** on 2026-11-09 the Cloud proxy rejected the archive
+**Real-data acquisition status:** on 2026-11-09 the Cloud proxy rejected the archive
 request with `CONNECT tunnel failed, response 403`. No genuine market sample
 was downloaded, and no genuine market validation is claimed. CSV import is
 ready, but this downloader's format and XAUUSD scale still require validation
 against genuine provider data. All automated tests are synthetic or mocked.
-See [data source notes](docs/data-sources.md) for assumptions and limitations.
+See [Phase 1.5 evidence](docs/phase-1-5-validation.md) for the latest acquisition
+and CI status, and [data source notes](docs/data-sources.md) for limitations.
 
 If the environment owner permits `datafeed.dukascopy.com` in Codex Cloud
 network settings, retry the one-hour command. Keep TLS verification enabled.
 Otherwise import a genuine, documented local CSV. Do not substitute synthetic
 prices for a failed real download.
+
+## One-hour dataset quality and genuine-data integration
+
+After a successful real download, run this offline check. The bundle must
+exactly cover the requested twelve M5 bar opens, including both endpoints:
+
+```bash
+.venv/bin/gold-data quality-report data/dukascopy-20240102-12 \
+  --start 2024-01-02T12:00:00Z --hours 1 \
+  --output data/quality-20240102-12.json
+GOLD_REAL_DATA_BUNDLE=data/dukascopy-20240102-12 \
+  GOLD_REAL_DATA_START=2024-01-02T12:00:00Z \
+  .venv/bin/python -m pytest -q -m integration
+```
+
+Reports include declared source/classification, SHA-256 integrity, expected vs
+observed coverage, UTC/OHLC/duplicate checks, gap intervals, price ranges and
+bid/ask open/close differences. They do not independently certify authenticity
+or price scale. Compare the decoded quotes with independent provider evidence.
+Gaps, including candidate weekend/holiday/daily breaks, are reviewed separately
+and remain errors; no unverified closure is automatically exempted. See
+[session review](docs/phase-1-5-validation.md#market-closures).
+
+The integration test reads a local, declared-historical bid/ask bundle and
+round-trips it through the CSV importer. It performs no network requests. It
+fails for malformed/missing configured data and rejects declared synthetic
+bundles. Without `GOLD_REAL_DATA_BUNDLE`, it explicitly skips; CI's skip must
+not be reported as successful real-market validation. The original 65 tests
+are unchanged. New quality-report unit tests also use synthetic fixtures only.
 
 ## Repository map and review
 
@@ -144,6 +174,7 @@ src/data/csv_io.py        CSV read, hash and validated bundle persistence
 src/data/validation.py    UTC, OHLC, duplicate and gap checks
 src/data/dukascopy.py     Optional bounded BI5 acquisition and M5 aggregation
 src/data/cli.py           gold-data CLI
+src/data/quality.py       Offline bundle integrity and explicit-window quality report
 src/features/             Reserved; no Phase 2 implementation
 src/ml/                   Reserved
 src/backtest/             Reserved
@@ -159,8 +190,11 @@ before running tests. Review the schema and validator first, then persistence,
 downloader and their tests. Run the exact commands above, inspect the synthetic
 bundle's metadata and check [verification evidence](docs/phase-1-validation.md).
 On GitHub, inspect the commit's **Files changed** and the **Actions** tab;
-local test results do not mean remote CI has run. CI performs no market downloads
-and requires no secrets. Dependencies are pinned in `requirements-dev.lock`;
+local test results do not mean remote CI has run. The Phase 1 remote run has now
+been verified: Python 3.11 and 3.12 each passed all 65 original tests. See the
+Phase 1.5 evidence for subsequent run IDs and counts. CI performs no market downloads
+and requires no secrets. It saves JUnit results for seven days and keeps both
+matrix jobs running if either fails. Dependencies are pinned in `requirements-dev.lock`;
 regenerate and review that file deliberately when upgrading.
 
 ## Safety and later phases

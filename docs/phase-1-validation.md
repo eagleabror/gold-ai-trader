@@ -3,6 +3,11 @@
 Date: 2026-11-09. Environment: Codex Cloud Linux, Python **3.12.14**.
 This report describes real command results, not trading performance.
 
+Later verification: Phase 1.5 retrieved the original GitHub Actions logs and
+confirmed run `42583736096` succeeded: Python 3.11.18 had `65 passed in 0.32s`,
+and Python 3.12.16 had `65 passed in 0.56s`. The remaining text records what was
+known at the original Phase 1 handoff; see [Phase 1.5 evidence](phase-1-5-validation.md).
+
 ## Completed checks
 
 ```text

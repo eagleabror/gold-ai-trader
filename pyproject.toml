@@ -24,6 +24,7 @@ package-dir = {gold_ai_trader = "src"}
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"
+markers = ["integration: local genuine-data check; skipped unless GOLD_REAL_DATA_BUNDLE is set"]
 
 [tool.ruff]
 target-version = "py311"
