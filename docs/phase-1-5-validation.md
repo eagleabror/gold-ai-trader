@@ -25,7 +25,18 @@ matrix fail-fast, and saves JUnit-only artifacts for seven days. No price data
 or model artifacts are uploaded. The opt-in genuine-data test skips in CI
 because no dataset is supplied; that skip is not real-data validation.
 
-The new branch's run will be recorded here after push and actual inspection.
+Phase 1.5 run: [42628513975](https://github.com/eagleabror/gold-ai-trader/actions/runs/42628513975),
+code commit `f2aa8e1e2e1eb34bef0b24fbc331493d67c03c91`, event `push`.
+Both jobs completed successfully; actual logs confirm:
+
+| Job | Actual interpreter | Pytest result | Dependency / lint / format / JUnit upload |
+| --- | --- | --- | --- |
+| `129198424902` | CPython 3.11.18 | `75 passed, 1 skipped in 0.61s` | all success |
+| `129198424556` | CPython 3.12.16 | `75 passed, 1 skipped in 0.46s` | all success |
+
+JUnit artifacts: `pytest-python-3.11` (`13679471951`) and
+`pytest-python-3.12` (`13678843858`). The single skip in each job is the
+genuine-data integration test, not a test failure or a market-data pass.
 
 ## Local regression and quality tooling
 
@@ -47,6 +58,13 @@ The skip is explicit: `GOLD_REAL_DATA_BUNDLE unset; genuine market data
 integration not executed`. All ten new quality-report unit cases use synthetic
 fixtures. The original 65 tests were not changed or removed. See README for
 `gold-data quality-report` and the real-data integration invocation.
+
+The CLI was also executed against the existing, explicitly synthetic three-row
+smoke bundle: exit `1`, expected `12`, observed `3`, missing `9`. Its JSON report
+was written under ignored `data/`; it demonstrates rejection of incomplete
+coverage, not genuine dataset validation. `pip check` also reported no broken
+requirements. The ignored `data/quality-acquisition-status.json` records the
+blocked genuine-data state with unmeasured checks left null.
 
 ## Acquisition and dataset quality status
 
