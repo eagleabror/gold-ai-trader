@@ -129,6 +129,14 @@ against genuine provider data. All automated tests are synthetic or mocked.
 See [Phase 1.5 evidence](docs/phase-1-5-validation.md) for the latest acquisition
 and CI status, and [data source notes](docs/data-sources.md) for limitations.
 
+The subsequent [real-market test](docs/real-market-data-test.md) rechecked the
+reported allowlist update against the attached executor and live proxy. The
+HTTPS CONNECT still returned `403`; genuine candles acquired: **0**. That
+market-test verdict is **FAIL**, independent of successful software-only CI.
+The quality CLI and explicitly configured genuine-data integration were also
+invoked and failed because the genuine bundle did not exist. No scale or
+market-data validation pass is claimed.
+
 If the environment owner permits `datafeed.dukascopy.com` in Codex Cloud
 network settings, retry the one-hour command. Keep TLS verification enabled.
 Otherwise import a genuine, documented local CSV. Do not substitute synthetic
